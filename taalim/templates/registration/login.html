@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    {% load static %}
+    {% load bootstrap5 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+    {% load bootstrap_icons %}
+
+</head>
+<body class="">
+    <nav class="navbar bg bg-light">
+        <a class="navbar-brand text-success ps-3" href="#">
+          <img src="{% static 'taalim/favicon.jpg' %}" class="rounded" style="width: 50px" > 
+          Taalim
+        </a>
+        <div class="d-flex gap-3 pe-5 align-items-center" >
+      </div>
+      </nav>
+
+    <div class="container col-4 mt-5 shadow rounded p-3">
+
+    {% if form.errors %}
+    <p>Your Username and Password didn't match, Please try again.</p>
+    {% endif %}
+
+    {% if next %}
+        {% if user.is_authenticated %}
+        <p>You do not have access!</p>
+        {% else %}
+        <p>Please login to see the site.</p>
+        {% endif %}
+    {% endif %}
+
+    {% load crispy_forms_tags %}
+    <form action="{% url "login" %}" method="post">
+        {% csrf_token %}
+        {{form|crispy}}
+
+        <div class="buttons mt-4 d-flex gap-2">
+        <input type="submit" value="Login" class="btn btn-success">
+        <input type="hidden" name="next" value="{{next}}">
+        <button onclick="window.location='{% url "taalim:signup_student" %}'" class="btn btn-success">Register as Student</button>
+        <button onclick="window.location='{% url "taalim:signup_teacher" %}'" class="btn btn-success">Register as Teacher</button>
+    </div>
+
+    </form>
+</div>
+
+</body>
+</html>

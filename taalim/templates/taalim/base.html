@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+{% load static %}
+
+
+{% load bootstrap5 %}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% block title %}
+    {% endblock %}
+
+    <link rel="shortcut icon" href="{% static 'taalim/favicon.jpg' %}"  type="image/x-icon">
+</head>
+<body>
+    {% block content %}
+    {% endblock %}
+</body>
+</html>

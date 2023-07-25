@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Semester GPA</title>
+
+    {% load bootstrap5 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+</head>
+<body class="d-flex justify-content-center">
+    <div class="container d-flex flex-column justify-content-center align-items-center ">
+
+    <button onclick="window.location='{% url "taalim:dashboard_admin" pk=user.id %}'" class="btn btn-success mt-5">Back</button>
+
+    <div class="container col-4 shadow rounded p-3 mt-5">
+
+        {% load crispy_forms_tags %}
+    <form action="" method="post">
+        {% csrf_token %}
+        {{form|crispy}}
+        <input type="submit" value="Submit" class="mt-3">
+        <input type="submit" onclick="window.location='{% url 'taalim:home' %}' ; return false;" value="Cancel">
+      </form>
+    </div>
+</div>
+</body>
+</html>

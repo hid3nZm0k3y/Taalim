@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    {% load static %}
+    {% load bootstrap5 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+
+    <link rel="shortcut icon" href="{% static "gaari/favicon.png" %}" type="image/x-icon">
+</head>
+<body class="d-flex justify-content-center">
+    <div class="container col-4 shadow rounded p-3 mt-5">
+        {% load crispy_forms_tags %}
+    <form action="" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <input type="submit" value="Submit" class="mt-5 btn btn-success">
+        <input type="submit" onclick="window.location='{% url 'taalim:home' %}' ; return false;" value="Cancel" class="mt-5 btn btn-success"> 
+      </form>
+    </div>
+</body>
+</html>

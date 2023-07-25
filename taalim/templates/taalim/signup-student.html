@@ -1,0 +1,27 @@
+{% extends './base.html' %}
+{%  load static %}
+
+{% load bootstrap5 %}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+{% load bootstrap_icons %}
+
+{% block title %}
+<title>Home</title>
+{% endblock%}
+
+{% block content %}
+<div class="container d-flex justify-content-center">
+<div class="shadow p-3 rounded mt-5 col-6" >
+    <h5>Register Below:</h5>
+    {% load crispy_forms_tags %}
+    <form method="post" action="" enctype="multipart/form-data">
+        {% csrf_token %}
+    {{form|crispy}}
+    <button onclick="window.location='{% url "taalim:signup_student" %}'" class="btn btn-primary">Register</button>
+    <button onclick="window.location='{% url "taalim:home" %}'" class="btn btn-primary">Back</button>
+
+</form>
+</div>
+</div>
+{% endblock%}

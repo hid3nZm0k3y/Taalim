@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    {% load static %}
+    {% load bootstrap5 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+
+    <link rel="shortcut icon" href="{% static "gaari/favicon.png" %}" type="image/x-icon">
+</head>
+<body class="d-flex justify-content-center">
+    <div class="container d-flex flex-column justify-content-center align-items-center ">
+
+        <button onclick="window.location='{% url "taalim:dashboard_teacher" pk=user.id %}'" class="btn btn-success mt-5">Back</button>
+    <div class="container col-4 shadow rounded p-3 mt-5">
+    <form action="" method="post">
+        {% csrf_token %}
+        {{form.as_p}}
+        <input type="submit" value="Submit">
+        <input type="submit" onclick="window.location='{% url 'taalim:home' %}' ; return false;" value="Cancel">
+      </form>
+
+    </div>
+</body>
+</html>

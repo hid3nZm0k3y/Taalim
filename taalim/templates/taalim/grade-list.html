@@ -1,0 +1,68 @@
+{% extends './base.html' %}
+{%  load static %}
+
+{% load bootstrap5 %}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+{% load bootstrap_icons %}
+
+{% block title %}
+<title>Home</title>
+{% endblock%}
+
+{% block content %}
+<div class="container d-flex flex-column justify-content-center align-items-center ">
+
+    <form>
+      <input type="text" name="search"       {% if search %} value={{search}} {% endif %}>
+      <button type="submit" class="btn btn-success my-3">Search</button>
+      <button onclick="window.location='{% url "taalim:view_grades" pk=user.id%}'" class="btn btn-success my-3"> {% bs_icon 'arrow-counterclockwise' %}</button>
+    </form>
+
+<div class="shadow p-3 rounded mt-5 col-8" >
+
+<table style="width: 100%;height: 100%; ">
+    <tr>
+        <th>ID</th>
+      <th>Student Name</th>
+      <th>Course Name</th>
+      <th>Marks</th>
+      <th>Actions</th>
+
+    </tr>
+    {% for grade in grades %}
+    {% if user.is_student %}
+    {% if user.get_username|stringformat:"s" == grade.student|stringformat:"s" %}
+    <tr class="{% cycle "bg bg-success bg-opacity-25" "" %}" >
+    <td>{{forloop.counter}}</td>
+    <td>{{grade.student}}</td>
+      <td>{{grade.course}}</td>
+      <td>{{grade.marks}}</td>
+      {% endif %}
+
+      {% else %}
+      <tr class="{% cycle "bg bg-success bg-opacity-25" "" %}" >
+        <td>{{forloop.counter}}</td>
+        <td>{{grade.student}}</td>
+          <td>{{grade.course}}</td>
+          <td>{{grade.marks}}</td>
+
+          {% endif %}
+
+      {% if user.is_teacher %}
+    <td>
+        <button onclick="window.location='{% url "taalim:edit_grade" pk=user.id id=grade.id %}'" class="btn btn-success my-3"> {% bs_icon 'pencil-square' %}Edit</button>
+      </td> 
+      {% endif %}
+    </tr>
+    {% endfor %}
+  </table> 
+
+
+</form>
+</div>
+
+<button onclick="window.location='{% url "taalim:home" %}'" class="btn btn-success mt-5">Back</button>
+
+</div>
+{% endblock%}

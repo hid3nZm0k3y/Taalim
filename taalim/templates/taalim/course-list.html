@@ -1,0 +1,75 @@
+{% extends './base.html' %}
+{%  load static %}
+
+{% load bootstrap5 %}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+{% load bootstrap_icons %}
+
+{% block title %}
+<title>Home</title>
+{% endblock%}
+
+{% block content %}
+<div class="container d-flex flex-column justify-content-center align-items-center ">
+
+    <form>
+      <input type="text" name="search"       {% if search %} value={{search}} {% endif %}>
+      <button type="submit" class="btn btn-success my-3">Search</button>
+      <button onclick="window.location='{% url "taalim:view_course" pk=user.id%}'" class="btn btn-success my-3"> {% bs_icon 'arrow-counterclockwise' %}</button>
+    </form>
+
+<div class="shadow p-3 rounded mt-5 col-8" >
+
+<table style="width: 100%;height: 100%; ">
+    <tr>
+        <th>ID</th>
+      <th>Course Name</th>
+      <th>Course Code</th>
+      <th>Faculty</th>
+      <th>Actions</th>
+
+    </tr>
+    {% for course in courses %}
+    
+    <tr class="{% cycle "bg bg-success bg-opacity-25" "" %}" >
+    <td>{{forloop.counter}}</td>
+    <td>{{course}}</td>
+      <td>{{course.course_code}}</td>
+      <td>{{course.instructor}}</td>
+      <td>
+      {% if user.is_teacher %}
+        {% if user.get_username == course.instructor|stringformat:"s" %}
+        <button onclick="window.location='{% url "taalim:roster" pk=user.id id=course.id %}'" class="btn btn-success my-3"> {% bs_icon 'check2-square' %}Roster</button>
+        <button onclick="window.location='{% url "taalim:edit_course" pk=user.id id=course.id %}'" class="btn btn-success my-3"> {% bs_icon 'pencil-square' %}Edit</button>
+        <button onclick="window.location='{% url "taalim:delete_course" pk=user.id id=course.id %}'" class="btn btn-success my-3"> {% bs_icon 'trash3' %}Delete</button>
+        {% else %}
+        <button onclick="window.location='{% url "taalim:edit_course" pk=user.id id=course.id %}'" class="btn btn-success my-3"> {% bs_icon 'check2-square' %}Roster</button>
+        {% endif %}
+
+
+        {% elif user.is_student %}
+
+        {% if course in semester_courses %}
+      <button onclick="window.location='{% url "taalim:unroll" pk=user.id id=course.id %}'" class="btn btn-success my-3"> {% bs_icon 'check2-square' %}Unroll</button>
+      {% else %}
+        <button onclick="window.location='{% url "taalim:enroll" pk=user.id id=course.id %}'" class="btn btn-success my-3"> {% bs_icon 'check2-square' %}Enroll</button>  
+      {% endif%}
+
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table> 
+
+
+</form>
+
+</div>
+{% if user.is_teacher %}
+<button onclick="window.location='{% url "taalim:dashboard_teacher" pk=user.id %}'" class="btn btn-success mt-5">Back</button>
+{% elif user.is_student %}
+<button onclick="window.location='{% url "taalim:dashboard_student" pk=user.id %}'" class="btn btn-success mt-5">Back</button>
+{% endif %}
+</div>
+{% endblock%}

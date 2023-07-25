@@ -1,0 +1,51 @@
+{% extends './base.html' %}
+{%  load static %}
+
+{% load bootstrap5 %}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+{% load bootstrap_icons %}
+{% block title %}
+
+<title>Dashboard</title>
+{% endblock%}
+
+{% block content %}
+<nav class="navbar bg bg-light">
+  <a class="navbar-brand text-success ps-3" href="#">
+    <img src="{% static 'taalim/favicon.jpg' %}" class="rounded" style="width: 50px" > 
+    Taalim
+  </a>
+  <div class="d-flex gap-3 pe-5 align-items-center" >
+  <p>Welcome: <strong>{{ user.username }}</strong> </p>
+  {% if user.profile_pic %}
+  <img src="{{user.profile_pic.url}}" alt="" style="width: 50px" class="rounded-circle me-3">
+  {% endif %}
+  <p><a href="{% url 'logout' %}" class="pe-3 btn btn-success">Log Out</a></p>
+</div>
+</nav>
+
+<button class="btn btn-success mt-3 ms-3" onclick="window.location='{% url 'taalim:home' %}' ; return false;" >back</button>
+
+
+<div class="container text-center d-flex flex-column justify-content-center align-items-center">
+  <div class="shadow shadow-1 rounded my-5 px-5">
+  <h4 class="mt-5 mb-3">Admin Dashboard</h4>
+
+  <div class="buttons d-flex flex-column gap-1 pb-3">
+    <button onclick="window.location='{% url "taalim:create_semester" pk=user.id %}'" class="btn btn-success my-3"> {% bs_icon 'clipboard-check' %}Create Semester</button>
+  <button onclick="window.location='{% url "taalim:view_semesters" pk=user.id %}'" class="btn btn-success my-3"> {% bs_icon 'database-check' %}View Semesters</button>
+<button onclick="window.location='{% url "taalim:view_grades" pk=user.id %}'" class="btn btn-success my-3"> {% bs_icon 'list-check' %}View Grades</button>
+<button onclick="window.location='{% url "taalim:view_gpas" pk=user.id %}'" class="btn btn-success my-3"> {% bs_icon 'ui-checks-grid' %}View Final Results</button>
+<button onclick="window.location='{% url "taalim:assign_gpa" pk=user.id %}'" class="btn btn-success my-3"> {% bs_icon 'pencil-square' %}Assign GPA</button>
+</div>
+</div>
+
+<div class="d-flex col-6">
+  <p class="bg bg-warning p-5" >Courses Offered: <strong>{{courses}}</strong> </p>
+  <p class="bg bg-info p-5">Enrolled Students: <strong>{{students}}</strong></p>
+  <p class="bg bg-danger p-5">Faculty: <strong>{{faculty}}</strong></p>
+  </div>
+  
+</div>
+  {% endblock%}

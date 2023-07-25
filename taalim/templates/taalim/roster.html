@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grade Course</title>
+
+    {% load bootstrap5 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+</head>
+<body class="d-flex justify-content-center">
+    <div class="container d-flex flex-column justify-content-center align-items-center ">
+
+    <button onclick="window.location='{% url "taalim:dashboard_teacher" pk=user.id %}'" class="btn btn-success mt-5">Back</button>
+
+    <div class="container col-4 shadow rounded p-3 mt-5">
+
+       <h5 class="mb-3">Roster: &emsp; {{course}}</h5>
+       {% for semester in semesters %}
+       <p class="{% cycle 'bg bg-success bg-opacity-25' '' %}">{{forloop.counter}}. {{semester.students}}</p>
+       {% endfor %}
+    </div>
+</div>
+</body>
+</html>
