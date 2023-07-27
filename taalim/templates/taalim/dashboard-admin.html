@@ -33,11 +33,11 @@
   <h4 class="mt-5 mb-3">Admin Dashboard</h4>
 
   <div class="buttons d-flex flex-column gap-1 pb-3">
+    <button onclick="window.location='{% url "taalim:view_course_admin" pk=user.id %}'" class="btn btn-success my-3"> {% bs_icon 'file-earmark-diff' %}Courses</button>
     <button onclick="window.location='{% url "taalim:create_semester" pk=user.id %}'" class="btn btn-success my-3"> {% bs_icon 'clipboard-check' %}Create Semester</button>
   <button onclick="window.location='{% url "taalim:view_semesters" pk=user.id %}'" class="btn btn-success my-3"> {% bs_icon 'database-check' %}View Semesters</button>
 <button onclick="window.location='{% url "taalim:view_grades" pk=user.id %}'" class="btn btn-success my-3"> {% bs_icon 'list-check' %}View Grades</button>
 <button onclick="window.location='{% url "taalim:view_gpas" pk=user.id %}'" class="btn btn-success my-3"> {% bs_icon 'ui-checks-grid' %}View Final Results</button>
-<button onclick="window.location='{% url "taalim:assign_gpa" pk=user.id %}'" class="btn btn-success my-3"> {% bs_icon 'pencil-square' %}Assign GPA</button>
 </div>
 </div>
 

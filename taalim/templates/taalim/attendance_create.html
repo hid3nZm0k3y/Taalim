@@ -3,31 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Semester GPA</title>
+    <title>Document</title>
 
+    {% load static %}
     {% load bootstrap5 %}
     {% bootstrap_css %}
     {% bootstrap_javascript %}
+
+    <link rel="shortcut icon" href="{% static "gaari/favicon.png" %}" type="image/x-icon">
 </head>
 <body class="d-flex justify-content-center">
     <div class="container d-flex flex-column justify-content-center align-items-center ">
 
-        {% if user.is_superuser %}
-    <button onclick="window.location='{% url "taalim:dashboard_admin" pk=user.id %}'" class="btn btn-success mt-5">Back</button>
-    {% elif user.is_student %}
-    <button onclick="window.location='{% url "taalim:dashboard_student" pk=user.id %}'" class="btn btn-success mt-5">Back</button>
-    {% endif %}
-
+        <button onclick="window.location='{% url "taalim:dashboard_teacher" pk=user.id %}'" class="btn btn-success mt-5">Back</button>
     <div class="container col-4 shadow rounded p-3 mt-5">
-        <p>Are you Sure ?</p>
-        {% load crispy_forms_tags %}
+        <div class="d-flex gap-5">
+        <p class="text-success">Student</p>
+        <p class="text-success">Status</p>
+    </div>
+
     <form action="" method="post">
         {% csrf_token %}
-        {{form|crispy}}
+        {{ formset.management_form }}
+        {% for form in formset %}
+        
+            {{ form.course }} {{ form.student}}  {{ form.status }}
+        <br><br>
+        {% endfor %}
         <input type="submit" value="Submit" class="mt-3">
         <input type="submit" onclick="window.location='{% url 'taalim:home' %}' ; return false;" value="Cancel">
       </form>
+
     </div>
-</div>
 </body>
 </html>

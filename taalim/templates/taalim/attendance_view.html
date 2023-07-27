@@ -16,61 +16,69 @@
     <form>
       <input type="text" name="search"       {% if search %} value={{search}} {% endif %}>
       <button type="submit" class="btn btn-success my-3">Search</button>
+      {% if user.is_student %}
+      <button onclick="window.location='{% url "taalim:dashboard_student" pk=user.id%}'" class="btn btn-success my-3"> {% bs_icon 'arrow-counterclockwise' %}</button>
+      {% elif user.is_superuser %}
       <button onclick="window.location='{% url "taalim:dashboard_admin" pk=user.id%}'" class="btn btn-success my-3"> {% bs_icon 'arrow-counterclockwise' %}</button>
+      {% endif %}
     </form>
 
-<div class="shadow p-3 rounded mt-5 col-8" >
+<div class="shadow p-3 rounded mt-5 col-8 text-center" >
 
 <table style="width: 100%;height: 100%; ">
   {% if user.is_student %}
   <tr>
     <th>ID</th>
-  <th>Term</th>
-  <th>Course Name</th>
-  <th>Student Name</th>
-  <th>Actions</th>
+  <th>Course</th>
+  <th>Student</th>
+  <th>Status</th>
+  <th>Date</th>
 
 </tr>
 
-    {% for semester in semesters %}
+    {% for attendance in attendances %}
 
-    {% if user.get_username|stringformat:"s" == semester.students|stringformat:"s" %}
-    {% for course in semester.courses.all %}
     <tr class="{% cycle "bg bg-success bg-opacity-25" "" %}" >
-    <td>{{forloop.counter}}</td>
-    <td>{{semester.term}}</td>
-      <td>{{course}}</td>
-      <td>{{semester.students}}</td>
-      <td>     
-        <button onclick="window.location='{% url "taalim:view_attendance" pk=user.id id=course.id %}'" class="btn btn-success my-3"> {% bs_icon 'clock' %}View Attendance</button>
-      </td>
-    </tr>
+      {% if attendance.student == user %}
 
-        {% endfor %}
-        {% endif %}
+    <td>{{forloop.counter}}</td>
+    <td>{{attendance.course}}</td>
+      <td>{{attendance.student}}</td>
+      <td>{{attendance.status}}</td>
+      <td>{{attendance.created_at}}</td>
+    </tr>      
+    {% endif %}
+
     {% endfor %}
   </table>
-    {% elif user.is_superuser %}
-    <table style="width: 100%;height: 100%; ">
 
+  {% if attendances %}
+  <p class="mt-3">Total = <strong>{{n}}%</strong></p>
+  {% else %}
+  <p class="mt-3">Total = <strong>0%</strong></p>
+  {% endif %}
+
+    {% elif user.is_superuser %}
     <tr>
       <th>ID</th>
-    <th>Semester</th>
-    <th>Action</th>
-
+    <th>Course</th>
+    <th>Student</th>
+    <th>Status</th>
+    <th>Date</th>
+  
   </tr>
-
-      {% for semester in semesters %}
+  
+      {% for attendance in attendances %}
       <tr class="{% cycle "bg bg-success bg-opacity-25" "" %}" >
-        <td>{{forloop.counter}}</td>
-        <td>{{semester}}</td>
-        <td>
-          <button onclick="window.location='{% url "taalim:edit_semester" pk=user.id id=semester.id %}'" class="btn btn-success my-3"> {% bs_icon 'pencil-square' %}Edit</button>
-          <button onclick="window.location='{% url "taalim:delete_semester" pk=user.id id=semester.id %}'" class="btn btn-success my-3"> {% bs_icon 'trash3' %}Delete</button>
-        </td>
-    </tr>
-{%  endfor %}
+      <td>{{forloop.counter}}</td>
+      <td>{{attendance.course}}</td>
+        <td>{{attendance.student}}</td>
+        <td>{{attendance.status}}</td>
+        <td>{{attendance.created_at}}</td>
+      </tr>
+      {% endfor %}
 
+    </table>
 
     {% endif %}
 

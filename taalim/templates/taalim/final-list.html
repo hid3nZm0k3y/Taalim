@@ -36,7 +36,11 @@
     <td>{{forloop.counter}}</td>
     <td>{{gpa.student}}</td>
     <td>{{gpa.semester}}</td>
-    <td>{{gpa.cgpa}}</td>
+    <td>{{gpa.cgpa|floatformat:2}}</td>
+    <td>
+      <button onclick="window.location='{% url "taalim:generate_report" pk=user.id id=gpa.id%}'" class="btn btn-success my-3"> {% bs_icon 'printer' %}Generate Report</button>
+      <button onclick="window.location='{% url "taalim:delete_gpa" pk=user.id id=gpa.id%}'" class="btn btn-success my-3"> {% bs_icon 'trash' %}Delete Record</button>
+    </td> 
     {% endif %}
 
       {% else %}
@@ -44,13 +48,15 @@
         <td>{{forloop.counter}}</td>
         <td>{{gpa.student}}</td>
           <td>{{gpa.semester}}</td>
-          <td>{{gpa.cgpa}}</td>
+          <td>{{gpa.cgpa|floatformat:2}}</td>
 
           {% endif %}
 
       {% if user.is_superuser %}
     <td>
         <button onclick="window.location='{% url "taalim:edit_gpa" pk=user.id id=gpa.id %}'" class="btn btn-success my-3"> {% bs_icon 'pencil-square' %}Edit</button>
+        <button onclick="window.location='{% url "taalim:delete_gpa" pk=user.id id=gpa.id%}'" class="btn btn-success my-3"> {% bs_icon 'trash' %}Delete Record</button>
+
       </td> 
       {% endif %}
     </tr>

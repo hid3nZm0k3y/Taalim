@@ -37,15 +37,21 @@
     <td>{{course}}</td>
       <td>{{course.course_code}}</td>
       <td>{{course.instructor}}</td>
-      <td>
+      <td class="ps-5">
       {% if user.is_teacher %}
         {% if user.get_username == course.instructor|stringformat:"s" %}
         <button onclick="window.location='{% url "taalim:roster" pk=user.id id=course.id %}'" class="btn btn-success my-3"> {% bs_icon 'check2-square' %}Roster</button>
+        <button onclick="window.location='{% url "taalim:take_attendance" pk=user.id  id=course.id%}'" class="btn btn-success my-3"> {% bs_icon 'clock' %}Attendance</button>
         <button onclick="window.location='{% url "taalim:edit_course" pk=user.id id=course.id %}'" class="btn btn-success my-3"> {% bs_icon 'pencil-square' %}Edit</button>
         <button onclick="window.location='{% url "taalim:delete_course" pk=user.id id=course.id %}'" class="btn btn-success my-3"> {% bs_icon 'trash3' %}Delete</button>
+        <button onclick="window.location='{% url "taalim:grade_course" pk=user.id id=course.id%}'" class="btn btn-success my-3"> {% bs_icon 'file-earmark-check' %}Grade Course</button>
         {% else %}
-        <button onclick="window.location='{% url "taalim:edit_course" pk=user.id id=course.id %}'" class="btn btn-success my-3"> {% bs_icon 'check2-square' %}Roster</button>
+        <button onclick="window.location='{% url "taalim:roster" pk=user.id id=course.id %}'" class="btn btn-success my-3"> {% bs_icon 'check2-square' %}Roster</button>
         {% endif %}
+
+        {% elif user.is_superuser %}
+        <button onclick="window.location='{% url "taalim:roster_admin" pk=user.id id=course.id %}'" class="btn btn-success my-3"> {% bs_icon 'check2-square' %}Roster</button>
+
 
 
         {% elif user.is_student %}
@@ -70,6 +76,9 @@
 <button onclick="window.location='{% url "taalim:dashboard_teacher" pk=user.id %}'" class="btn btn-success mt-5">Back</button>
 {% elif user.is_student %}
 <button onclick="window.location='{% url "taalim:dashboard_student" pk=user.id %}'" class="btn btn-success mt-5">Back</button>
+{% elif user.is_superuser %}
+<button onclick="window.location='{% url "taalim:dashboard_admin" pk=user.id %}'" class="btn btn-success mt-5">Back</button>
+
 {% endif %}
 </div>
 {% endblock%}

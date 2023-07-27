@@ -27,6 +27,7 @@
       <th>Student Name</th>
       <th>Course Name</th>
       <th>Marks</th>
+      <th>Grade</th>
       <th>Actions</th>
 
     </tr>
@@ -38,6 +39,8 @@
     <td>{{grade.student}}</td>
       <td>{{grade.course}}</td>
       <td>{{grade.marks}}</td>
+      <td>{{grade.gpa|floatformat:2 }}</td>
+
       {% endif %}
 
       {% else %}
@@ -46,10 +49,11 @@
         <td>{{grade.student}}</td>
           <td>{{grade.course}}</td>
           <td>{{grade.marks}}</td>
+          <td>{{grade.gpa|floatformat:2 }}</td>
 
           {% endif %}
 
-      {% if user.is_teacher %}
+      {% if user.is_teacher and grade.course.instructor == user %}
     <td>
         <button onclick="window.location='{% url "taalim:edit_grade" pk=user.id id=grade.id %}'" class="btn btn-success my-3"> {% bs_icon 'pencil-square' %}Edit</button>
       </td> 
@@ -61,8 +65,13 @@
 
 </form>
 </div>
+{% if user.is_student %}
+<button onclick="window.location='{% url "taalim:request_gpa" pk=user.id %}'" class="btn btn-success my-3"> {% bs_icon 'pencil-square' %}Request GPA</button>
+{% endif %}
+
 
 <button onclick="window.location='{% url "taalim:home" %}'" class="btn btn-success mt-5">Back</button>
+
 
 </div>
 {% endblock%}

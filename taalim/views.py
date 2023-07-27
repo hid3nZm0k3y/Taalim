@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, FileResponse
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth.decorators import user_passes_test
 from django.urls import reverse_lazy, reverse
@@ -9,8 +9,18 @@ from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.db.models import Q
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .forms import StudentSignupForm, TeacherSignupForm, CourseForm, GradeForm, GPAForm, SemesterForm
-from .models import User, Course, Semester, CourseResult, SemesterResult
+from .forms import StudentSignupForm, TeacherSignupForm, CourseForm, GradeForm, GPAForm, SemesterForm, AttendanceForm
+from django.forms import formset_factory
+from .models import User, Course, Semester, CourseResult, SemesterResult, Attendance
+
+import io
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import inch
+from reportlab.lib.units import cm
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate
+from reportlab.platypus.tables import Table
+
 
 # Decorator Patterns
 
@@ -145,6 +155,7 @@ def index(request):
 def enroll(request, pk, id):
     user = request.user
     course = Course.objects.get(pk=id)
+    course.enroll(user)
     semester = Semester.objects.get(students=user.id)
     semester.enroll(course)
     semester.save()
@@ -156,6 +167,7 @@ def enroll(request, pk, id):
 def unroll(request, pk, id):
     user = request.user
     course = Course.objects.get(pk=id)
+    course.unroll(user)
     semester = Semester.objects.get(students=user.id)
     semester.unroll(course)
     semester.save()
@@ -201,6 +213,8 @@ def view_course(request, pk):
             print(semester_courses)
         if(request.user.is_teacher):
             semester_courses = courses
+        if(request.user.is_superuser):
+            semester_courses = courses
 
     user = request.user
     return render(request, 'taalim/course-list.html', {
@@ -239,12 +253,16 @@ def edit_course(request,pk, id):
 
 @login_required
 @teacher_required
-def grade_course(request,pk):
+def grade_course(request,pk, id):
     if(request.method == "GET"):
-        form = GradeForm()
+        user = request.user
+        course = Course.objects.get(pk=id)
+        form = GradeForm(course, id)
 
     if(request.method == "POST"):
-        form = GradeForm(request.POST)
+        user = request.user
+        course = Course.objects.get(pk=id)
+        form = GradeForm(course, id, request.POST)
 
         if(form.is_valid()):
             print(form.cleaned_data)
@@ -361,17 +379,54 @@ def edit_grade(request,pk, id):
     grade = get_object_or_404(CourseResult, pk=id)
     
     if(request.method == "POST"):
-        form = GradeForm(request.POST, instance=grade)
+        course = grade.course
+        course_id = grade.course.id
+        form = GradeForm(course, course_id, request.POST, instance=grade)
 
         if(form.is_valid()):
             form.save()
             url = reverse('taalim:dashboard_teacher', kwargs={'pk': pk})
             return HttpResponseRedirect(url)
     if(request.method == "GET"):
-        form = GradeForm(instance=grade)
+        course = grade.course
+        course_id = grade.course.id
+        form = GradeForm(course, course_id, instance=grade)
 
     return render(request, 'taalim/grade-edit.html', {
         "form": form
+    })
+
+
+@admin_required
+@login_required
+def roster_admin(request,pk, id):
+    if(request.method == "GET"):
+            course = Course.objects.get(pk=id).course_name
+            semesters = Semester.objects.filter(courses__course_name__icontains = course)
+
+            user = request.user
+            percentages = []
+            if(semesters):
+                for semester in semesters:
+                    student = semester.students
+                    present = Attendance.objects.filter(course=id).filter(student=student).filter(status=True)
+                    absent = Attendance.objects.filter(course=id).filter(student=student).filter(status=False)
+
+                    p_count = present.count()
+                    a_count = absent.count()
+                    total = p_count + a_count
+                    if (total == 0):
+                        total = 1
+                    n = round((p_count * 100)/total,2)
+                    percentages.append(n)
+
+    return render(request, 'taalim/roster.html', {
+        "course": course,
+        "semesters": semesters,
+        "user": user,
+        "percentages": percentages,
+        "data": zip(semesters, percentages)
+
     })
 
 
@@ -382,36 +437,88 @@ def roster(request, pk, id):
         course = Course.objects.get(pk=id).course_name
         semesters = Semester.objects.filter(courses__course_name__icontains = course)
 
-    user = request.user
+        user = request.user
+        percentages = []
+        if(semesters):
+            for semester in semesters:
+                student = semester.students
+                present = Attendance.objects.filter(course=id).filter(student=student).filter(status=True)
+                absent = Attendance.objects.filter(course=id).filter(student=student).filter(status=False)
+
+                p_count = present.count()
+                a_count = absent.count()
+                total = p_count + a_count
+                if (total == 0):
+                    total = 1
+                n = round((p_count * 100)/total,2)
+                percentages.append(n)
+
     return render(request, 'taalim/roster.html', {
         "course": course,
         "semesters": semesters,
-        "user": user
+        "user": user,
+        "percentages": percentages,
+        "data": zip(semesters, percentages)
+
     })
 
 
 @login_required
-@admin_required
-def assign_gpa(request,pk):
+@student_required
+def request_gpa(request,pk):
+    user = User.objects.get(pk=pk)
+    semester = Semester.objects.get(students=user.id)
+
     if(request.method == "GET"):
         form = GPAForm()
+        form.fields.pop("cgpa")
+        form.fields.pop("student")
+        form.fields.pop("semester")
+
 
     if(request.method == "POST"):
         form = GPAForm(request.POST)
+        form.fields.pop("cgpa")
+        form.fields.pop("student")
+        form.fields.pop("semester")
 
         if(form.is_valid()):
             print(form.cleaned_data)
             user = form.save(commit=False)
+            user.student = User.objects.get(pk=pk)
+            user.semester = Semester.objects.get(students=user.student)
+
+            total_credit = 0
+            earned_credit = 0
+
+            for course in semester.courses.all():
+                total_credit += course.credit_hours
+
+            results = CourseResult.objects.filter(student=user.student)
+
+            for result in results.all():
+                earned_credit += result.gpa
+
+            user.cgpa = (earned_credit * 4)/(total_credit)
+            print(earned_credit, total_credit)
             user.save()
 
             # redirect user to home page
-            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+            url = reverse('taalim:home')
+            return HttpResponseRedirect(url)
 
     user = request.user
     return render(request, 'taalim/semester-grade.html', {
         "form": form,
         "user": user
     })
+
+@login_required
+def delete_gpa(request,pk, id):
+    gpa = SemesterResult.objects.filter(pk=id)
+    gpa.delete()
+
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 @login_required
 @admin_required
@@ -422,7 +529,9 @@ def edit_gpa(request,pk, id):
         form = GPAForm(request.POST, instance=gpa)
 
         if(form.is_valid()):
-            form.save()
+            obj = form.save(commit=False)
+            obj.save()
+
             url = reverse('taalim:dashboard_admin', kwargs={'pk': pk})
             return HttpResponseRedirect(url)
     if(request.method == "GET"):
@@ -458,4 +567,109 @@ def view_gpas(request, pk):
     return render(request, 'taalim/final-list.html', {
         "gpas": gpas,
         "user": user,
+    })
+
+
+@login_required
+@student_required
+def generate_report(request, pk, id):
+    buffer = io.BytesIO()
+    canv = canvas.Canvas(buffer, pagesize=letter, bottomup=0)
+
+    text_object = canv.beginText()
+    text_object.setTextOrigin(inch, inch)
+    text_object.setFont("Helvetica", 14)
+
+    lines = []
+
+    canv.setFont('Helvetica', 20)
+    canv.drawString(3*inch, 0.5*inch, 'Unofficial Transcript')
+
+    course_results = CourseResult.objects.filter(student=pk)
+    for result in course_results.all():
+        lines.append(result.course.course_name)
+        lines.append("Marks: " + str(result.marks) + "/" + str(100))
+        lines.append("Grade: " + str(round(result.gpa, 2)) + "/" + str(result.course.credit_hours))
+        lines.append("")
+
+    semester_result = SemesterResult.objects.get(pk=id)
+    lines.append("CGPA: " + str(round(semester_result.cgpa, 2)) + "/" + str(4))
+
+    for line in lines:
+        text_object.textLine(line)
+
+    canv.drawText(text_object)
+    canv.showPage()
+    canv.save()
+    buffer.seek(0)
+
+    return FileResponse(buffer, as_attachment=True, filename="result.pdf")
+
+@login_required
+@teacher_required
+def take_attendance(request, pk, id):
+    if(request.method == "GET"):
+        course = Course.objects.get(pk=id)
+        n = 0
+        students= []
+
+        for student in course.students.all():
+            n = n + 1
+            students.append(student)
+
+        AttendanceFormset = formset_factory(AttendanceForm ,max_num=n)
+        some_formset = AttendanceFormset(initial=[{'course': course, "student": x.id} for x in students])
+
+    if request.method == "POST":
+
+        course = Course.objects.get(pk=id)
+        n = 0
+        students= []
+
+        for student in course.students.all():
+            n = n + 1
+            students.append(student)
+
+        AttendanceFormset = formset_factory(AttendanceForm, max_num=n)
+        some_formset = AttendanceFormset(initial=[{'course': course, "student": x.id} for x in students])
+        formset = AttendanceFormset(request.POST)
+
+        if formset.is_valid():
+            for form in formset:
+                form.save()
+        
+            url = reverse('taalim:dashboard_teacher', kwargs={'pk': pk})
+            return HttpResponseRedirect(url)
+
+    return render(request, 'taalim/attendance_create.html', {
+        "formset": some_formset,
+    })
+
+
+@login_required
+def view_attendance(request, pk, id):
+    if(request.method == "GET"):    
+        attendances = Attendance.objects.filter(course=id)
+        n = 0
+
+        search = request.GET.get("search", False)
+        if(search):
+            query = Q(student__username__contains = search)
+            attendances = Attendance.objects.filter(query)
+
+        if(attendances and request.user.is_student):
+
+            present = Attendance.objects.filter(course=id).filter(student=request.user.id).filter(status=True)
+            absent = Attendance.objects.filter(course=id).filter(student=request.user.id).filter(status=False)
+
+            p_count = present.count()
+            a_count = absent.count()
+            total = p_count + a_count
+            n = round((p_count * 100)/total,2)
+
+    user = request.user
+    return render(request, 'taalim/attendance_view.html', {
+        "attendances": attendances,
+        "user": user,
+        "n": n
     })

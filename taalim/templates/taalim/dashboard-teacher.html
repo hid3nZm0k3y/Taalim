@@ -31,7 +31,6 @@
 <div class="buttons d-flex flex-column align-items-stretch mb-5">
 <button onclick="window.location='{% url "taalim:view_course" pk=user.id %}'" class="btn btn-success my-3"> {% bs_icon 'file-earmark-diff' %}Courses</button>
 <button onclick="window.location='{% url "taalim:create_course" user.id %}'" class="btn btn-success my-3"> {% bs_icon 'file-earmark-binary' %}Create Course</button>
-<button onclick="window.location='{% url "taalim:grade_course" pk=user.id %}'" class="btn btn-success my-3"> {% bs_icon 'file-earmark-check' %}Grade Course</button>
 <button onclick="window.location='{% url "taalim:view_grades" pk=user.id %}'" class="btn btn-success my-3"> {% bs_icon 'pencil-square' %}Grades</button>
 
 </div>

@@ -21,7 +21,7 @@
       </div>
       </nav>
 
-    <div class="container col-4 mt-5 shadow rounded p-3">
+    <div class="container col-5 mt-5 shadow rounded p-3">
 
     {% if form.errors %}
     <p>Your Username and Password didn't match, Please try again.</p>
@@ -45,6 +45,8 @@
         <input type="hidden" name="next" value="{{next}}">
         <button onclick="window.location='{% url "taalim:signup_student" %}'" class="btn btn-success">Register as Student</button>
         <button onclick="window.location='{% url "taalim:signup_teacher" %}'" class="btn btn-success">Register as Teacher</button>
+        <button onclick="window.location='{% url "taalim:home" %}'" class="btn btn-success">Cancel</button>
+
     </div>
 
     </form>
