@@ -15,6 +15,7 @@ from .models import User, Course, Semester, CourseResult, SemesterResult, Attend
 
 import io
 from reportlab.pdfgen import canvas
+from reportlab.lib import colors
 from reportlab.lib.units import inch
 from reportlab.lib.units import cm
 from reportlab.lib.pagesizes import letter
@@ -571,41 +572,6 @@ def view_gpas(request, pk):
 
 
 @login_required
-@student_required
-def generate_report(request, pk, id):
-    buffer = io.BytesIO()
-    canv = canvas.Canvas(buffer, pagesize=letter, bottomup=0)
-
-    text_object = canv.beginText()
-    text_object.setTextOrigin(inch, inch)
-    text_object.setFont("Helvetica", 14)
-
-    lines = []
-
-    canv.setFont('Helvetica', 20)
-    canv.drawString(3*inch, 0.5*inch, 'Unofficial Transcript')
-
-    course_results = CourseResult.objects.filter(student=pk)
-    for result in course_results.all():
-        lines.append(result.course.course_name)
-        lines.append("Marks: " + str(result.marks) + "/" + str(100))
-        lines.append("Grade: " + str(round(result.gpa, 2)) + "/" + str(result.course.credit_hours))
-        lines.append("")
-
-    semester_result = SemesterResult.objects.get(pk=id)
-    lines.append("CGPA: " + str(round(semester_result.cgpa, 2)) + "/" + str(4))
-
-    for line in lines:
-        text_object.textLine(line)
-
-    canv.drawText(text_object)
-    canv.showPage()
-    canv.save()
-    buffer.seek(0)
-
-    return FileResponse(buffer, as_attachment=True, filename="result.pdf")
-
-@login_required
 @teacher_required
 def take_attendance(request, pk, id):
     if(request.method == "GET"):
@@ -673,3 +639,81 @@ def view_attendance(request, pk, id):
         "user": user,
         "n": n
     })
+
+
+@login_required
+@student_required
+def generate_report(request, pk, id):
+    buffer = io.BytesIO()
+    c = canvas.Canvas(buffer, pagesize=letter, bottomup=1)
+
+    lines = []
+
+    c.drawImage("http://127.0.0.1:8000/static/taalim/favicon.jpg", 0.25*inch, 9*inch, width=1*inch, preserveAspectRatio=True, mask="auto")
+    c.setFillColorRGB(0.09804,  0.52941,  0.32941)
+    c.setFont('Helvetica', 14)
+    c.drawString(1.375*inch, 10.25*inch, 'Taalim')
+    c.setFillColor(colors.black)
+
+    c.setFont('Helvetica', 14)
+    c.setFillColorRGB(0.7529411764705882, 0.7529411764705882, 0.7529411764705882)
+    c.drawString(3.25*inch, 9.675*inch, 'Unofficial Transcript')
+    c.setFillColor(colors.black)
+
+    name = request.user.username
+    user_id = request.user.id
+
+    c.setFont('Helvetica', 12)
+    c.drawString(6*inch, 10.5*inch, 'Name: ' + str(name))
+    c.drawString(6*inch, 10.25*inch, 'ID:' + str(id))
+
+
+    c.setStrokeColor(colors.black)
+    c.setLineWidth(1)
+    c.line(0.25*inch,9.5*inch,8.25*inch,9.5*inch)
+
+
+    course_results = CourseResult.objects.filter(student=pk)
+    for result in course_results.all():
+        lines.append(result.course.course_name)
+        lines.append(str(result.marks) + "/" + str(100))
+        lines.append(str(round(result.gpa, 2)) + "/" + str(result.course.credit_hours))
+        lines.append("")
+
+    semester_result = SemesterResult.objects.get(pk=id)
+    cgpa_string = "CGPA: " + str(round(semester_result.cgpa, 2)) + "/" + str(4)
+
+    c.setFont('Helvetica', 14)
+
+    x = 1 * inch
+    y = 9.25 * inch
+    subject = [1,5,9,13,17,21,25,29]
+
+    c.drawString(x, y - 0.25 * inch, "Subject")
+    c.drawString(x + 3.5 * inch, y - 0.25 * inch, "Marks")
+    c.drawString(x + 5 * inch , y - 0.25 * inch, "Grade")
+
+    for index,line in enumerate(lines):
+        if(line == ""):
+            x = -0.5 * inch
+            y = y -0.25 * inch
+
+        if(index % 4 == 0):
+            c.drawString(x , y - 0.75 * inch, line)
+            x= x + 3.5*inch
+            continue
+
+        c.drawString(x , y - 0.75 * inch, line)
+        x= x + 1.5*inch
+            
+    c.drawString(x , y - 1.5 * inch, cgpa_string)
+
+    c.setLineWidth(1)
+    c.line(0.25*inch,1*inch,8.25*inch,1*inch)
+
+
+    c.showPage()
+    c.save()
+    buffer.seek(0)
+
+    return FileResponse(buffer, as_attachment=True, filename="result.pdf")
